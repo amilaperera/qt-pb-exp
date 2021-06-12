@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(pb_example LANGUAGES CXX)
+project(pb-types LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
