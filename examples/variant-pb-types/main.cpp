@@ -49,6 +49,7 @@
 #include "qtbuttonpropertybrowser.h"
 #include "qtgroupboxpropertybrowser.h"
 #include "qtvariantproperty.h"
+#include <QDebug>
 
 int main(int argc, char **argv)
 {
@@ -65,6 +66,9 @@ int main(int argc, char **argv)
     group->addSubProperty(vpm->addProperty(QMetaType::QSizePolicy, "sizePolicy"));
     group->addSubProperty(vpm->addProperty(QMetaType::QSize, "sizeIncrement"));
     group->addSubProperty(vpm->addProperty(QMetaType::Bool, "mouseTracking"));
+    QObject::connect(vpm, &QtVariantPropertyManager::valueChanged, [&](QtProperty *property, const QVariant& value) {
+        qDebug() << property->propertyName() << " changed. Value: " << value.toString();
+    });
 
     auto* enumProperty = vpm->addProperty(QtVariantPropertyManager::enumTypeId(), "direction");
     auto types = QStringList() << "Up" << "Right" << "Down" << "Left";
@@ -77,20 +81,33 @@ int main(int argc, char **argv)
     valueProperty->setAttribute("maximum", 100);
     group->addSubProperty(valueProperty);
 
-    auto* browser = new QtTreePropertyBrowser(w);
-    auto* variantEditorFactory = new QtVariantEditorFactory(w);
-    browser->setFactoryForManager(vpm, variantEditorFactory);
-    browser->addProperty(group);
+    auto* treeBrowser = new QtTreePropertyBrowser(w);
+    auto* variantEditorFactoryForTree = new QtVariantEditorFactory(w);
+    treeBrowser->setFactoryForManager(vpm, variantEditorFactoryForTree);
+    treeBrowser->addProperty(group);
 
     QGridLayout *layout = new QGridLayout(w);
-    QLabel *lable = new QLabel("Editable Tree Property Browser");
-    lable->setWordWrap(true);
-    lable->setFrameShadow(QFrame::Sunken);
-    lable->setFrameShape(QFrame::Panel);
-    lable->setAlignment(Qt::AlignCenter);
+    auto* label1 = new QLabel("Editable Tree Property Browser");
+    label1->setWordWrap(true);
+    label1->setFrameShadow(QFrame::Sunken);
+    label1->setFrameShape(QFrame::Panel);
+    label1->setAlignment(Qt::AlignCenter);
 
-    layout->addWidget(lable, 0, 0);
-    layout->addWidget(browser, 1, 0);
+    auto* groupBrowser = new QtGroupBoxPropertyBrowser(w);
+    auto* variantEditorFactoryGroup = new QtVariantEditorFactory(w);
+    groupBrowser->setFactoryForManager(vpm, variantEditorFactoryGroup);
+    groupBrowser->addProperty(group);
+
+    auto* label2 = new QLabel("Editable Group Property Browser");
+    label2->setWordWrap(true);
+    label2->setFrameShadow(QFrame::Sunken);
+    label2->setFrameShape(QFrame::Panel);
+    label2->setAlignment(Qt::AlignCenter);
+
+    layout->addWidget(label1, 0, 0);
+    layout->addWidget(label2, 0, 1);
+    layout->addWidget(treeBrowser, 1, 0);
+    layout->addWidget(groupBrowser, 1, 1);
     w->show();
 
     int ret = app.exec();
